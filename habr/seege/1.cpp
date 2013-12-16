@@ -60,8 +60,40 @@ void push_number(tokens &pr, int num) {
     }
 }
 
+token calc3(tokens &pr) {
+    token s2 = pr.back(); pr.pop_back();
+    token op = pr.back(); pr.pop_back();
+    token s1 = pr.back(); pr.pop_back();
+
+    if (s1.type != token::E_NUMBER || op.type != token::E_OPERATOR || s2.type != token::E_NUMBER) {
+        throw std::domain_error("unexpected closing brace");
+    }
+
+    switch (op.data.c_val) {
+        case '+':
+            s1.data.d_val += s2.data.d_val;
+            break;
+        case '-':
+            s1.data.d_val -= s2.data.d_val;
+            break;
+        case '*':
+            s1.data.d_val *= s2.data.d_val;
+            break;
+        case '/':
+            s1.data.d_val /= s2.data.d_val;
+            break;
+        default:
+        throw std::domain_error("internal error");
+    }
+
+    return s1;
+}
+
 void pop_level(tokens &pr, int level) {
-    if (level <= 0) {
+    if (level == 0) {
+        if (pr.size() > 3) {
+            pr.push_back(calc3(pr));
+        }
         return;
     }
     if (pr.empty() || pr.back().type == token::E_LEVEL || pr.back().type == token::E_OPERATOR) {
@@ -77,30 +109,7 @@ void pop_level(tokens &pr, int level) {
             pop_level(pr, delta);
         }
     } else if (pr.size() > 3) {
-        token s2 = pr.back(); pr.pop_back();
-        token op = pr.back(); pr.pop_back();
-        token s1 = pr.back(); pr.pop_back();
-
-        if (s1.type != token::E_NUMBER || op.type != token::E_OPERATOR || s2.type != token::E_NUMBER) {
-            throw std::domain_error("unexpected closing brace");
-        }
-
-        switch (op.data.c_val) {
-            case '+':
-                s1.data.d_val += s2.data.d_val;
-                break;
-            case '-':
-                s1.data.d_val -= s2.data.d_val;
-                break;
-            case '*':
-                s1.data.d_val *= s2.data.d_val;
-                break;
-            case '/':
-                s1.data.d_val /= s2.data.d_val;
-                break;
-            default:
-            throw std::domain_error("internal error");
-        }
+        token s1 = calc3(pr);
 
         if (pr.back().type == token::E_LEVEL) {
             if (pr.back().data.i_val > level) {
