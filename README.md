@@ -1,4 +1,4 @@
 junk
 ====
 
-I just publish shore code fragments here
+I just publish short code fragments here
